@@ -1,33 +1,12 @@
-const path = require('path');
-const fs = require('fs');
 const Discord = require('discord.js');
 const { getCommandAndArgs, logger } = require('./src/utils');
+const commands = require('./src/discord/cmds');
 
 const botToken = process.env.BOT_TOKEN;
 const botPrefix = process.env.BOT_PREFIX;
 const botChannel = process.env.BOT_CHANNEL_ID;
 
 const client = new Discord.Client();
-const cmdsDirPath = path.join(__dirname, 'src/discord/cmds');
-const commands = {};
-
-fs.readdir(cmdsDirPath, (error, files) => {
-  if (error) {
-    logger.error('Error on commands loader');
-    return console.error(error);
-  }
-
-  files.forEach((file) => {
-    if (!file.endsWith('.js')) return;
-
-    const command = require(`${cmdsDirPath}/${file}`);
-    for (var i = 0; i < command.actions.length; i += 1) {
-      commands[command.actions[i].toLowerCase()] = command.handler;
-    }
-  });
-
-  logger.server('Commands loaded!');
-});
 
 // messageUpdate
 // messageReactionAdd

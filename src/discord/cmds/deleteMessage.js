@@ -1,7 +1,10 @@
 module.exports = {
   actions: ['delete'],
   handler: async (message, { args }) => {
-    const limit = args[0] || 2;
+    let limit = Number.parseInt(args[0]);
+
+    if (!limit) limit = 1;
+    limit += 1;
 
     await message.channel.messages
       .fetch({ limit })
