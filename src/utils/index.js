@@ -1,13 +1,11 @@
 const path = require('path');
 const fs = require('fs');
 const chalk = require('chalk');
-const axios = require('axios').default;
 const Jimp = require('jimp');
 const { v4: uuidv4 } = require('uuid');
+const { omdbAPI } = require('./request');
 
 const botPrefix = process.env.BOT_PREFIX;
-const omdbToken = process.env.OMDB_API_TOKEN;
-
 const imagesDirPath = path.join(__dirname, '../../images/');
 
 const logger = {
@@ -21,15 +19,6 @@ const getCommandAndArgs = (message) => {
 
   return { command, args };
 };
-
-const omdbAPIRequest = (options) =>
-  axios
-    .request({
-      baseURL: `http://www.omdbapi.com/?apikey=${omdbToken}`,
-      responseType: 'json',
-      ...options
-    })
-    .then((response) => (response ? response : null));
 
 const writeFile = (dirPath, fileName, data, options) => {
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath);
@@ -82,7 +71,7 @@ const searchByTitle = async (obj) => {
 
   const params = { s: title, type, page, y: year ? year : undefined };
 
-  const res = await omdbAPIRequest({ method: 'GET', params });
+  const res = await omdbAPI.request({ method: 'GET', params });
   const data = await Promise.all(
     res.data['Search'].map(async (obj) => {
       const newImage = await clipImage(obj['Poster'], false);
@@ -108,7 +97,7 @@ const searchOneByIdOrTitle = async (obj) => {
     y: year ? year : undefined
   };
 
-  const res = await omdbAPIRequest({ method: 'GET', params });
+  const res = await omdbAPI.request({ method: 'GET', params });
 
   return { ...res };
 };
