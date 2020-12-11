@@ -5,7 +5,6 @@ const commands = require('./src/discord/cmds');
 const botToken = process.env.BOT_TOKEN;
 const botPrefix = process.env.BOT_PREFIX;
 const botChannel = process.env.BOT_CHANNEL_ID;
-
 const client = new Discord.Client();
 
 // messageUpdate
