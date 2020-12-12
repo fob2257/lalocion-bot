@@ -9,24 +9,54 @@ const logger = {
 };
 
 const getCommandAndArgs = (message) => {
-  const args = message.content.slice(botPrefix.length).trim().split(' ');
-  const command = args.shift().toLowerCase();
+  const argsString = message.content
+    .slice(botPrefix.length)
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const command = argsString.split(' ').shift().toLowerCase();
+  const args = argsString
+    .slice(command.length)
+    .trim()
+    .split(/"([^]*)"/g)
+    .reduce((curr, val) => {
+      const arg = val.replace(/"+/g, '').replace(/\s+/g, ' ').trim();
+
+      return arg.length > 0 ? [...curr, arg] : curr;
+    }, []);
 
   return { command, args };
 };
 
-const searchByTitle = async (obj) => {
+const searchByTitle = (obj) => {
   const { title, year, page = 1, type = 'movie' } = obj;
 
   const params = { s: title, type, page, y: year ? year : undefined };
 
-  const res = await omdbAPI.request({ method: 'GET', params });
+  const pagesObj = {
+    totalResults: 0,
+    totalPages: 0,
+    page
+  };
 
-  const data = res.data['Search'];
-  const totalResults = Number.parseInt(res.data['totalResults']);
-  const totalPages = Math.ceil(Math.round(totalResults / data.length));
+  return omdbAPI
+    .request({ method: 'GET', params })
+    .then((res) => {
+      if (res.data['Error']) {
+        return { ...pagesObj, error: res.data['Error'] };
+      }
 
-  return { ...res, data, totalResults, totalPages, page };
+      const data = res.data['Search'];
+      pagesObj.totalResults = Number.parseInt(res.data['totalResults']);
+      pagesObj.totalPages =
+        Math.ceil((pagesObj.totalResults / 10) * Math.pow(10, 0)) /
+        Math.pow(10, 0);
+
+      return { ...res, ...pagesObj, data };
+    })
+    .catch((error) => {
+      return { ...pagesObj, error: error.message };
+    });
 };
 
 const searchOneByIdOrTitle = async (obj) => {
