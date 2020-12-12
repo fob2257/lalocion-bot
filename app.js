@@ -34,7 +34,7 @@ client.on('message', async (message) => {
     logger.error(`${command} ${args}`);
     console.error(error);
 
-    return message.channel.send(
+    await message.channel.send(
       new Discord.MessageEmbed()
         .setColor('#FF0000')
         .setTitle('Error')
