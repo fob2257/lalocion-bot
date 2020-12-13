@@ -15,15 +15,16 @@ const getCommandAndArgs = (message) => {
     .trim();
 
   const command = argsString.split(' ').shift().toLowerCase();
-  const args = argsString
-    .slice(command.length)
-    .trim()
-    .split(/"([^]*)"/g)
-    .reduce((curr, val) => {
-      const arg = val.replace(/"+/g, '').replace(/\s+/g, ' ').trim();
+  let args = argsString.slice(command.length).trim();
 
-      return arg.length > 0 ? [...curr, arg] : curr;
-    }, []);
+  const regex = /"([^]*)"/g;
+  const matches = regex.test(args);
+
+  args = args.split(matches ? regex : ' ').reduce((curr, val) => {
+    const arg = val.replace(/"+/g, '').replace(/\s+/g, ' ').trim();
+
+    return arg.length > 0 ? [...curr, arg] : curr;
+  }, []);
 
   return { command, args };
 };
@@ -54,13 +55,11 @@ const searchByTitle = (obj) => {
 
       return { ...res, ...pagesObj, data };
     })
-    .catch((error) => {
-      return { ...pagesObj, error: error.message };
-    });
+    .catch((error) => ({ error: error.message }));
 };
 
 const searchOneByIdOrTitle = async (obj) => {
-  const { id, title, year, type = 'movie', plot = 'short' } = obj;
+  const { id, title, year, type = 'movie', plot = 'full' } = obj;
 
   const params = {
     type,
@@ -70,9 +69,9 @@ const searchOneByIdOrTitle = async (obj) => {
     y: year ? year : undefined
   };
 
-  const res = await omdbAPI.request({ method: 'GET', params });
-
-  return { ...res };
+  return omdbAPI
+    .request({ method: 'GET', params })
+    .catch((error) => ({ error: error.message }));
 };
 
 module.exports = {
