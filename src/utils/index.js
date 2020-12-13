@@ -59,7 +59,7 @@ const searchByTitle = (obj) => {
 };
 
 const searchOneByIdOrTitle = async (obj) => {
-  const { id, title, year, type = 'movie', plot = 'full' } = obj;
+  const { id, title, year, type = 'movie', plot = 'short' } = obj;
 
   const params = {
     type,
@@ -71,6 +71,7 @@ const searchOneByIdOrTitle = async (obj) => {
 
   return omdbAPI
     .request({ method: 'GET', params })
+    .then((res) => (res.data['Error'] ? { error: res.data['Error'] } : res))
     .catch((error) => ({ error: error.message }));
 };
 

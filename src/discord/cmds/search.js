@@ -3,7 +3,7 @@ const randomHex = require('random-hex-color');
 const { searchByTitle } = require('../../utils');
 
 module.exports = {
-  actions: ['search'],
+  actions: ['search', 's'],
   handler: async (message, { args }) => {
     if (args.length === 0 || args[0].length < 4) return;
 
@@ -37,7 +37,7 @@ module.exports = {
     const pageCounter = `Page (${res.page}/${res.totalPages}).`;
     const totalMoviesCounter =
       res.totalResults === 0
-        ? `${res.totalResults} movies. Hmm, weird...`
+        ? `${res.totalResults} movies. :disappointed_relieved:`
         : res.totalResults === 1
         ? `${res.totalResults} movie.`
         : `${res.totalResults} movies. ${pageCounter}`;
@@ -50,11 +50,6 @@ module.exports = {
     if (!(res.error || res.totalResults === 0)) {
       for (let i = 0; i < res.data.length; i += 1) {
         const obj = res.data[i];
-
-        // messageEmbed.setTitle(`${obj['Title']} (${obj['Year']})`);
-        // messageEmbed.setDescription(`ID ${obj['imdbID']}`);
-        // messageEmbed.setThumbnail(obj['Poster']);
-        //   \u200B
 
         let movieData = `**${obj['Title']} (${obj['Year']})**`;
 
