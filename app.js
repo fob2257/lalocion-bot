@@ -26,9 +26,7 @@ client.on('message', async (message) => {
   if (!commands[command]) return;
 
   try {
-    const fn = await commands[command](message, { command, args }, client);
-
-    if (fn) fn();
+    await commands[command](message, { command, args }, client);
   } catch (error) {
     logger.error('Error on message listener');
     logger.error(`${command} ${args}`);
