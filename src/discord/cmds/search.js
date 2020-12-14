@@ -1,11 +1,14 @@
 const Discord = require('discord.js');
 const randomHex = require('random-hex-color');
-const { searchByTitle } = require('../../utils');
+const { searchByTitle, isImbdID, isValidYear } = require('../../utils');
+const searchOne = require('./searchOne');
 
 module.exports = {
   actions: ['search', 's'],
   handler: async (message, { args }) => {
-    if (args.length === 0 || args[0].length < 4) return;
+    if (args.length === 0 || args[0].length < 3) return;
+
+    if (isImbdID(args[0])) return searchOne.handler(message, { args });
 
     const maxArgs = 3;
     const params = [...args].slice(0, maxArgs).reduce((obj, val, i) => {
@@ -20,16 +23,7 @@ module.exports = {
         }
       }
 
-      const parsedVal = Number.parseInt(val);
-      if (
-        val.length === 4 &&
-        parsedVal >= 1910 &&
-        parsedVal <= new Date().getFullYear()
-      ) {
-        return { ...obj, year: val };
-      }
-
-      return { ...obj };
+      return isValidYear(val) ? { ...obj, year: val } : { ...obj };
     }, {});
 
     const res = await searchByTitle(params);

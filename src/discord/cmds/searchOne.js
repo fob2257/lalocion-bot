@@ -1,30 +1,21 @@
 const Discord = require('discord.js');
 const randomHex = require('random-hex-color');
-const { searchOneByIdOrTitle } = require('../../utils');
+const { searchOneByIdOrTitle, isImbdID, isValidYear } = require('../../utils');
 
 module.exports = {
   actions: ['searchOne', 'so'],
   handler: async (message, { args }) => {
-    if (args.length === 0 || args[0].length < 4) return;
+    if (args.length === 0 || args[0].length < 3) return;
 
     const maxArgs = 2;
     const params = [...args].slice(0, maxArgs).reduce((obj, val, i) => {
       if (i === 0) {
-        const matches = /ev\d{7}\/\d{4}(-\d)?|(ch|co|ev|nm|tt)\d{7}/.test(val);
+        const matches = isImbdID(val);
 
         return matches ? { ...obj, id: val } : { ...obj, title: val };
       }
 
-      const parsedVal = Number.parseInt(val);
-      if (
-        val.length === 4 &&
-        parsedVal >= 1910 &&
-        parsedVal <= new Date().getFullYear()
-      ) {
-        return { ...obj, year: val };
-      }
-
-      return { ...obj };
+      return isValidYear(val) ? { ...obj, year: val } : { ...obj };
     }, {});
 
     const res = await searchOneByIdOrTitle(params);
@@ -44,11 +35,13 @@ module.exports = {
       }
 
       messageEmbed.addFields(
-        ['Genre', 'Rated', 'Director', 'Writer', 'Actors'].map((key, i) => ({
-          name: key,
-          value: res.data[key],
-          inline: i <= 1
-        }))
+        ['Genre', 'Rated', 'Director', 'Writer', 'Actors', 'Released'].map(
+          (key, i) => ({
+            name: key,
+            value: res.data[key],
+            inline: i <= 1
+          })
+        )
       );
 
       if (res.data['Ratings'] && res.data['Ratings'].length) {

@@ -21,13 +21,21 @@ const getCommandAndArgs = (message) => {
   const matches = regex.test(args);
 
   args = args.split(matches ? regex : ' ').reduce((curr, val) => {
-    const arg = val.replace(/"+/g, '').replace(/\s+/g, ' ').trim();
+    const arg = val
+      .replace(/["|']+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
 
     return arg.length > 0 ? [...curr, arg] : curr;
   }, []);
 
   return { command, args };
 };
+
+const isImbdID = (val = '') =>
+  /ev\d{7}\/\d{4}(-\d)?|(ch|co|ev|nm|tt)\d{7}/.test(val);
+
+const isValidYear = (val = '') => /^(19|20)\d{2}$/.test(val);
 
 const searchByTitle = (obj) => {
   const { title, year, page = 1, type = 'movie' } = obj;
@@ -79,5 +87,7 @@ module.exports = {
   getCommandAndArgs,
   logger,
   searchOneByIdOrTitle,
-  searchByTitle
+  searchByTitle,
+  isImbdID,
+  isValidYear
 };
