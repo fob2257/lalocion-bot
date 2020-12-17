@@ -1,6 +1,9 @@
-const Discord = require('discord.js');
-const randomHex = require('random-hex-color');
-const { searchOneByIdOrTitle, isImbdID, isValidYear } = require('../../utils');
+const {
+  searchOneByIdOrTitle,
+  isImdbID,
+  isValidYear,
+  generateMessageEmbed
+} = require('../../utils');
 
 module.exports = {
   actions: ['searchOne', 'so'],
@@ -10,7 +13,7 @@ module.exports = {
     const maxArgs = 2;
     const params = [...args].slice(0, maxArgs).reduce((obj, val, i) => {
       if (i === 0) {
-        const matches = isImbdID(val);
+        const matches = isImdbID(val);
 
         return matches ? { ...obj, id: val } : { ...obj, title: val };
       }
@@ -20,7 +23,7 @@ module.exports = {
 
     const res = await searchOneByIdOrTitle(params);
 
-    const messageEmbed = new Discord.MessageEmbed().setColor(randomHex());
+    const messageEmbed = generateMessageEmbed();
 
     if (!res.data || res.error) {
       messageEmbed
@@ -54,7 +57,7 @@ module.exports = {
         );
       }
 
-      messageEmbed.setFooter(`ID ${res.data['imdbID']}`);
+      messageEmbed.setFooter(`ID ${res.data.imdbID}`);
     }
 
     await message.channel.send(messageEmbed);

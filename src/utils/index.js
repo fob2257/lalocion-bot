@@ -1,5 +1,8 @@
+const Discord = require('discord.js');
+const randomHex = require('random-hex-color');
 const chalk = require('chalk');
 const { omdbAPI } = require('./request');
+const { refs } = require('../firebase');
 
 const botPrefix = process.env.BOT_PREFIX;
 
@@ -9,30 +12,31 @@ const logger = {
 };
 
 const getCommandAndArgs = (message) => {
-  const argsString = message.content
+  let argsString = message.content
     .slice(botPrefix.length)
-    .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .replace(/\s+/g, ' ');
 
   const command = argsString.split(' ').shift().toLowerCase();
-  let args = argsString.slice(command.length).trim();
+  argsString = argsString.slice(command.length).trim();
 
   const regex = /"([^]*)"/g;
-  const matches = regex.test(args);
+  const matches = regex.test(argsString);
 
-  args = args.split(matches ? regex : ' ').reduce((curr, val) => {
-    const arg = val
-      .replace(/["|']+/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    return arg.length > 0 ? [...curr, arg] : curr;
-  }, []);
+  const args = !matches
+    ? argsString.split(' ')
+    : argsString
+        .split(regex)
+        .filter((val) => val.length)
+        .map((val, i) =>
+          i === 0 ? val.replace(/("|')+/g, '').trim() : val.trim().split(' ')
+        )
+        .flat();
 
   return { command, args };
 };
 
-const isImbdID = (val = '') =>
+const isImdbID = (val = '') =>
   /ev\d{7}\/\d{4}(-\d)?|(ch|co|ev|nm|tt)\d{7}/.test(val);
 
 const isValidYear = (val = '') => /^(19|20)\d{2}$/.test(val);
@@ -83,11 +87,45 @@ const searchOneByIdOrTitle = async (obj) => {
     .catch((error) => ({ error: error.message }));
 };
 
+const generateMessageEmbed = () =>
+  new Discord.MessageEmbed().setColor(randomHex());
+
+const getMovie = async (id) => {
+  const dataSnapshot = await refs.movies.child(id).once('value');
+
+  return dataSnapshot.val();
+};
+
+const addMovie = async (id, movie, user) => {
+  const movieRef = refs.movies.child(id);
+  const movieFound = await getMovie(id);
+
+  if (movieFound) {
+    await movieRef.update({
+      watched: false,
+      updatedAt: new Date().toISOString()
+    });
+  } else {
+    await movieRef.set({
+      data: movie,
+      addedBy: user,
+      watched: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  return movieRef;
+};
+
 module.exports = {
   getCommandAndArgs,
   logger,
   searchOneByIdOrTitle,
   searchByTitle,
-  isImbdID,
-  isValidYear
+  isImdbID,
+  isValidYear,
+  generateMessageEmbed,
+  getMovie,
+  addMovie
 };

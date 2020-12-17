@@ -1,6 +1,9 @@
-const Discord = require('discord.js');
-const randomHex = require('random-hex-color');
-const { searchByTitle, isImbdID, isValidYear } = require('../../utils');
+const {
+  searchByTitle,
+  isImdbID,
+  isValidYear,
+  generateMessageEmbed
+} = require('../../utils');
 const searchOne = require('./searchOne');
 
 module.exports = {
@@ -8,7 +11,7 @@ module.exports = {
   handler: async (message, { args }) => {
     if (args.length === 0 || args[0].length < 3) return;
 
-    if (isImbdID(args[0])) return searchOne.handler(message, { args });
+    if (isImdbID(args[0])) return searchOne.handler(message, { args });
 
     const maxArgs = 3;
     const params = [...args].slice(0, maxArgs).reduce((obj, val, i) => {
@@ -36,8 +39,7 @@ module.exports = {
         ? `${res.totalResults} movie.`
         : `${res.totalResults} movies. ${pageCounter}`;
 
-    const messageEmbed = new Discord.MessageEmbed()
-      .setColor(randomHex())
+    const messageEmbed = generateMessageEmbed()
       .setTitle(`Lalo searched for \`${params.title}\``)
       .setDescription(`Found ${totalMoviesCounter}`);
 
@@ -51,7 +53,7 @@ module.exports = {
           movieData = `[${movieData}](${obj['Poster']})`;
         }
 
-        messageEmbed.addField(`ID ${obj['imdbID']}`, movieData);
+        messageEmbed.addField(`ID ${obj.imdbID}`, movieData);
       }
     }
 

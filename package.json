@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +15,7 @@
     "chalk": "^4.1.0",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
+    "firebase-admin": "^9.4.2",
     "random-hex-color": "^1.0.1"
   },
   "devDependencies": {

@@ -7,11 +7,6 @@ const botPrefix = process.env.BOT_PREFIX;
 const botChannel = process.env.BOT_CHANNEL_ID;
 const client = new Discord.Client();
 
-// messageUpdate
-// messageReactionAdd
-// messageReactionRemove
-// messageDelete
-// messageDeleteBulk
 client.on('message', async (message) => {
   if (
     message.author.bot ||
