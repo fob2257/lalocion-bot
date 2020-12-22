@@ -1,6 +1,7 @@
 const {
   searchByTitle,
   isImdbID,
+  isValidPage,
   isValidYear,
   generateMessageEmbed
 } = require('../../utils');
@@ -17,12 +18,11 @@ module.exports = {
     const params = [...args].slice(0, maxArgs).reduce((obj, val, i) => {
       if (i === 0) return { ...obj, title: val };
 
-      const valMatches = val.match(/p[0-9]+/);
-      if (valMatches) {
-        const parsedMatchVal = Number.parseInt(valMatches[0].split('p')[1]);
+      if (isValidPage(val)) {
+        const pageVal = val.split('p')[1];
 
-        if (parsedMatchVal > 0 && `${parsedMatchVal}`.length <= 4) {
-          return { ...obj, page: parsedMatchVal };
+        if (pageVal.length <= 4) {
+          return { ...obj, page: pageVal };
         }
       }
 

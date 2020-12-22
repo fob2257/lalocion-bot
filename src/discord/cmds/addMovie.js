@@ -41,6 +41,8 @@ module.exports = {
       avatar: message.author.avatarURL()
     });
 
-    await message.channel.send(`Added to the list: ${res.data['Title']} (${res.data['Year']}) ID ${res.data['imdbID']}`);
+    await message.channel.send(
+      `Added to the list: ${res.data['Title']} (${res.data['Year']}) ID ${res.data['imdbID']}`
+    );
   }
 };

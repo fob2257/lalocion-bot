@@ -39,6 +39,8 @@ const getCommandAndArgs = (message) => {
 const isImdbID = (val = '') =>
   /ev\d{7}\/\d{4}(-\d)?|(ch|co|ev|nm|tt)\d{7}/.test(val);
 
+const isValidPage = (val = '') => /p[1-9]+/.test(val);
+
 const isValidYear = (val = '') => /^(19|20)\d{2}$/.test(val);
 
 const searchByTitle = (obj) => {
@@ -91,27 +93,29 @@ const generateMessageEmbed = () =>
   new Discord.MessageEmbed().setColor(randomHex());
 
 const getMovie = async (id) => {
-  const dataSnapshot = await refs.movies.child(id).once('value');
+  const docSnapshot = await refs.movies.doc(id).get();
 
-  return dataSnapshot.val();
+  return docSnapshot.data();
 };
 
 const addMovie = async (id, movie, user) => {
-  const movieRef = refs.movies.child(id);
-  const movieFound = await getMovie(id);
+  const movieRef = refs.movies.doc(id);
+  const docSnapshot = await movieRef.get();
 
-  if (movieFound) {
-    await movieRef.update({
-      watched: false,
-      updatedAt: new Date().toISOString()
-    });
+  const obj = {
+    watched: false,
+    updatededBy: user,
+    updatedAt: Date.now()
+  };
+
+  if (docSnapshot.exists) {
+    await movieRef.update(obj);
   } else {
     await movieRef.set({
       data: movie,
-      addedBy: user,
-      watched: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdBy: user,
+      createdAt: Date.now(),
+      ...obj
     });
   }
 
@@ -124,6 +128,7 @@ module.exports = {
   searchOneByIdOrTitle,
   searchByTitle,
   isImdbID,
+  isValidPage,
   isValidYear,
   generateMessageEmbed,
   getMovie,

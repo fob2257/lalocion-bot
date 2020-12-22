@@ -2,17 +2,16 @@ const admin = require('firebase-admin');
 const serviceAccount = require('../../lalocion-bot-firebase-adminsdk.json');
 
 const app = admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FB_DATABASE_URL
+  credential: admin.credential.cert(serviceAccount)
 });
 
-const appDatabase = app.database();
+const appFirestore = app.firestore();
 
 const refs = {
-  movies: appDatabase.ref('movies')
+  movies: appFirestore.collection('movies')
 };
 
 module.exports = {
-  appDatabase,
+  appFirestore,
   refs
 };
