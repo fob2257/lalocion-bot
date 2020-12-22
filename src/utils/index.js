@@ -41,7 +41,12 @@ const isImdbID = (val = '') =>
 
 const isValidPage = (val = '') => /p[1-9]+/.test(val);
 
+const isWatchedVal = (val = '') => /^(watched|w)([=](true|false))?$/.test(val);
+
 const isValidYear = (val = '') => /^(19|20)\d{2}$/.test(val);
+
+const isValidDate = (val = '') =>
+  /^(0?[1-9]|[12]\d|3[01])[/](0?[1-9]|1[0-2])[/](19|20)\d{2}$/.test(val);
 
 const searchByTitle = (obj) => {
   const { title, year, page = 1, type = 'movie' } = obj;
@@ -92,6 +97,38 @@ const searchOneByIdOrTitle = async (obj) => {
 const generateMessageEmbed = () =>
   new Discord.MessageEmbed().setColor(randomHex());
 
+const getMovies = async (obj) => {
+  const { page = 1, watched = false, startDate, endDate } = obj;
+
+  let query = refs.movies.where('watched', '==', watched);
+
+  if (startDate) query = query.where('updatedAt', '>=', startDate);
+  if (endDate) query = query.where('updatedAt', '<=', endDate);
+
+  query = query.orderBy('updatedAt', 'desc');
+
+  const limit = 10;
+  let totalResults = (await query.get()).size;
+  const totalPages =
+    Math.ceil((totalResults / limit) * Math.pow(10, 0)) / Math.pow(10, 0);
+
+  const docSnapshot = await query
+    .offset((page - 1) * limit)
+    .limit(limit)
+    .get();
+
+  const data = docSnapshot.docs.map((doc) => doc.data());
+
+  if (docSnapshot.empty) totalResults = 0;
+
+  return {
+    page,
+    totalPages,
+    totalResults,
+    data
+  };
+};
+
 const getMovie = async (id) => {
   const docSnapshot = await refs.movies.doc(id).get();
 
@@ -129,8 +166,11 @@ module.exports = {
   searchByTitle,
   isImdbID,
   isValidPage,
+  isWatchedVal,
   isValidYear,
+  isValidDate,
   generateMessageEmbed,
+  getMovies,
   getMovie,
   addMovie
 };
